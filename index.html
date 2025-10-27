@@ -1,1107 +1,1090 @@
-<html>
+<!DOCTYPE html>
+<html lang="pl">
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta http-equiv="Content-Style-Type" content="text/css">
-  <title></title>
-  <meta name="Generator" content="Cocoa HTML Writer">
-  <meta name="CocoaVersion" content="2487.7">
-  <style type="text/css">
-    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 30.0px 'Helvetica Neue'; color: #000000}
-    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 30.0px 'Helvetica Neue'; color: #000000; min-height: 37.0px}
-    span.s1 {font: 30.0px 'Apple Color Emoji'}
-    span.s2 {font: 30.0px 'Zapf Dingbats'}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Świąteczne Koło Fortuny</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a3d2e 0%, #1a5c4a 25%, #2d4a3e 50%, #1a3d2e 75%, #0f2d21 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Snowflakes */
+        .snowflake {
+            position: absolute;
+            top: -10px;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.5em;
+            animation: fall linear infinite;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(110vh) rotate(360deg);
+            }
+        }
+
+        /* Lights decoration */
+        .lights {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            display: flex;
+            justify-content: space-around;
+            z-index: 5;
+        }
+
+        .light {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            animation: blink 1s infinite;
+        }
+
+        .light:nth-child(odd) { animation-delay: 0s; background: #ff0000; }
+        .light:nth-child(even) { animation-delay: 0.5s; background: #00ff00; }
+
+        @keyframes blink {
+            0%, 49% { opacity: 0.3; }
+            50%, 100% { opacity: 1; }
+        }
+
+        .container {
+            text-align: center;
+            z-index: 10;
+            max-width: 1400px;
+            padding: 20px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #ffd700;
+            font-size: 3.5em;
+            margin-bottom: 30px;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.8), 0 0 40px rgba(255, 215, 0, 0.5);
+            animation: titleGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes titleGlow {
+            from {
+                text-shadow: 0 0 20px #ffd700, 0 0 30px #ffd700, 0 0 40px #ffd700;
+            }
+            to {
+                text-shadow: 0 0 30px #ffed4e, 0 0 50px #ffed4e, 0 0 70px #ffed4e;
+            }
+        }
+
+        .game-layout {
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .left-panel {
+            flex: 0 0 350px;
+        }
+
+        .selector-container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .selector-container h2 {
+            color: #1a5c4a;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .name-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .name-btn {
+            padding: 15px 25px;
+            font-size: 1.2em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #c41e3a 0%, #8b0000 100%);
+            color: white;
+            border: 3px solid #ffd700;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.5s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .name-btn:hover:not(.blocked):not(.removed) {
+            transform: translateX(10px) scale(1.05);
+            box-shadow: 0 10px 25px rgba(196, 30, 58, 0.5);
+        }
+
+        .name-btn.selected {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            color: #1a5c4a;
+            border-color: #8b0000;
+        }
+
+        .name-btn.blocked {
+            background: linear-gradient(135deg, #666 0%, #444 100%);
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: translateX(30px);
+        }
+
+        .name-btn.blocked::after {
+            content: '🔒';
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2em;
+        }
+
+        .name-btn.removed {
+            opacity: 0;
+            transform: translateX(50px) scale(0.8);
+            pointer-events: none;
+            max-height: 0;
+            padding: 0;
+            margin: 0;
+            border: none;
+        }
+
+        .blocked-tooltip {
+            background: rgba(255, 255, 255, 0.98);
+            padding: 15px 20px;
+            border-radius: 15px;
+            margin-top: 15px;
+            border: 3px solid #ffd700;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            animation: tooltipBounce 0.5s ease;
+        }
+
+        @keyframes tooltipBounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .blocked-tooltip-text {
+            color: #8b0000;
+            font-weight: bold;
+            font-size: 1.1em;
+            line-height: 1.5;
+        }
+
+        .results-list {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .results-list h3 {
+            color: #1a5c4a;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+
+        .current-result-item {
+            padding: 10px 15px;
+            margin: 6px 0;
+            background: linear-gradient(90deg, #ffd700 0%, #ffed4e 100%);
+            border-radius: 8px;
+            color: #1a5c4a;
+            font-weight: bold;
+            font-size: 1em;
+            text-align: left;
+        }
+
+        .wheel-section {
+            flex: 0 0 700px;
+        }
+
+        .wheel-container {
+            position: relative;
+            width: 700px;
+            height: 700px;
+            margin: 0 auto;
+        }
+
+        .wheel-cover {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.95) 0%, rgba(139, 0, 0, 0.95) 100%);
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 150;
+            font-size: 3em;
+            color: white;
+            font-weight: bold;
+            text-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+            animation: coverPulse 0.5s ease-in-out;
+        }
+
+        .wheel-cover.active {
+            display: flex;
+        }
+
+        @keyframes coverPulse {
+            0%, 100% { transform: scale(0.8); opacity: 0; }
+            50% { transform: scale(1.1); opacity: 1; }
+        }
+
+        #wheelCanvas {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 15px 40px rgba(0, 0, 0, 0.6));
+        }
+
+        .pointer {
+            position: absolute;
+            top: 50%;
+            right: -40px;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-top: 40px solid transparent;
+            border-bottom: 40px solid transparent;
+            border-right: 70px solid #ff0000;
+            filter: drop-shadow(0 5px 15px rgba(255, 0, 0, 0.7));
+            z-index: 100;
+        }
+
+        .center-circle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            border: 8px solid #8b0000;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.8), inset 0 0 20px rgba(139, 0, 0, 0.3);
+            z-index: 101;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .center-circle-text {
+            color: #8b0000;
+            font-weight: bold;
+            font-size: 1.1em;
+            text-align: center;
+            line-height: 1.3;
+        }
+
+        .spin-btn {
+            margin-top: 20px;
+            padding: 20px 50px;
+            font-size: 1.5em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #ff0000 0%, #c41e3a 100%);
+            color: white;
+            border: 4px solid #ffd700;
+            border-radius: 20px;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(255, 0, 0, 0.5);
+            transition: all 0.3s ease;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .spin-btn:hover {
+            transform: translateY(-5px) scale(1.1);
+            box-shadow: 0 12px 35px rgba(255, 0, 0, 0.7);
+        }
+
+        .spin-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            animation: none;
+        }
+
+        .message {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px 40px;
+            border-radius: 20px;
+            margin-top: 30px;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6em;
+            color: #1a5c4a;
+            font-weight: bold;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            animation: messageAppear 0.5s ease;
+        }
+
+        @keyframes messageAppear {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .final-results {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a3d2e 0%, #8b0000 50%, #0f2d21 100%);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            overflow-y: auto;
+            animation: fadeIn 1s ease;
+        }
+
+        .final-results.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .results-content {
+            background: rgba(255, 255, 255, 0.98);
+            padding: 50px;
+            border-radius: 30px;
+            max-width: 800px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+            animation: slideUp 1s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .results-content h2 {
+            color: #8b0000;
+            margin-bottom: 40px;
+            font-size: 3em;
+            text-align: center;
+            animation: titleGlow 2s ease-in-out infinite alternate;
+        }
+
+        .result-item {
+            padding: 20px 30px;
+            margin: 15px 0;
+            background: linear-gradient(90deg, #ffd700 0%, #ffed4e 50%, #ffd700 100%);
+            border-radius: 15px;
+            color: #1a5c4a;
+            font-weight: bold;
+            font-size: 1.4em;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            animation: resultAppear 0.8s ease forwards;
+            opacity: 0;
+        }
+
+        @keyframes resultAppear {
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            from {
+                transform: translateX(-30px);
+            }
+        }
+
+        .credits {
+            margin-top: 50px;
+            text-align: center;
+            animation: creditsAppear 2s ease 3s forwards;
+            opacity: 0;
+        }
+
+        @keyframes creditsAppear {
+            to { opacity: 1; }
+        }
+
+        .credits-title {
+            font-size: 2em;
+            color: #8b0000;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .credits-name {
+            font-size: 3em;
+            background: linear-gradient(135deg, #ffd700, #ff0000, #00ff00, #ffd700);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: bold;
+            animation: rainbowShift 3s ease infinite;
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+        }
+
+        @keyframes rainbowShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .credits-subtitle {
+            font-size: 1.3em;
+            color: #1a5c4a;
+            margin-top: 10px;
+            font-style: italic;
+        }
+
+        .restart-btn {
+            margin-top: 40px;
+            padding: 20px 60px;
+            font-size: 1.4em;
+            background: linear-gradient(135deg, #8b0000 0%, #c41e3a 100%);
+            color: white;
+            border: 4px solid #ffd700;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .restart-btn:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 15px 40px rgba(139, 0, 0, 0.7);
+        }
+
+        @media (max-width: 1200px) {
+            .game-layout {
+                flex-direction: column;
+                align-items: center;
+            }
+            .left-panel {
+                flex: 0 0 auto;
+                width: 100%;
+                max-width: 500px;
+            }
+        }
+
+        @media (max-width: 800px) {
+            .wheel-container, .wheel-section {
+                width: 500px;
+                height: 500px;
+            }
+            h1 {
+                font-size: 2.5em;
+            }
+        }
+    </style>
 </head>
 <body>
-<p class="p1"><b>&lt;!DOCTYPE html&gt;</b></p>
-<p class="p1"><b>&lt;html lang="pl"&gt;</b></p>
-<p class="p1"><b>&lt;head&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">    </span>&lt;meta charset="UTF-8"&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">    </span>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">    </span>&lt;title&gt;Świąteczne Koło Fortuny&lt;/title&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">    </span>&lt;style&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>* {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>margin: 0;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>padding: 0;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>box-sizing: border-box;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>body {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>background: linear-gradient(135deg, #0a3d2e 0%, #1a5c4a 25%, #2d4a3e 50%, #1a3d2e 75%, #0f2d21 100%);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>background-size: 400% 400%;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>animation: gradientShift 15s ease infinite;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>min-height: 100vh;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>display: flex;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>flex-direction: column;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>align-items: center;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>justify-content: center;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>overflow-x: hidden;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>position: relative;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>@keyframes gradientShift {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>0% { background-position: 0% 50%; }</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>50% { background-position: 100% 50%; }</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>100% { background-position: 0% 50%; }</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>/* Snowflakes */</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>.snowflake {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>position: absolute;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>top: -10px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>color: rgba(255, 255, 255, 0.9);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>font-size: 1.5em;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>animation: fall linear infinite;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>pointer-events: none;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>z-index: 1;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>@keyframes fall {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>to {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>transform: translateY(110vh) rotate(360deg);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>}</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>/* Lights decoration */</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>.lights {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>position: absolute;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>top: 0;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>left: 0;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>right: 0;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>height: 50px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>display: flex;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>justify-content: space-around;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>z-index: 5;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>.light {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>width: 10px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>height: 10px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>border-radius: 50%;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>animation: blink 1s infinite;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>.light:nth-child(odd) { animation-delay: 0s; background: #ff0000; }</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>.light:nth-child(even) { animation-delay: 0.5s; background: #00ff00; }</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>@keyframes blink {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>0%, 49% { opacity: 0.3; }</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>50%, 100% { opacity: 1; }</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>.container {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>text-align: center;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>z-index: 10;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>max-width: 1400px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>padding: 20px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>width: 100%;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>h1 {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>color: #ffd700;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>font-size: 3.5em;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>margin-bottom: 30px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>text-shadow: 0 0 20px rgba(255, 215, 0, 0.8), 0 0 40px rgba(255, 215, 0, 0.5);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>animation: titleGlow 2s ease-in-out infinite alternate;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>@keyframes titleGlow {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>from {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>text-shadow: 0 0 20px #ffd700, 0 0 30px #ffd700, 0 0 40px #ffd700;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>}</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>to {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>text-shadow: 0 0 30px #ffed4e, 0 0 50px #ffed4e, 0 0 70px #ffed4e;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>}</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>.game-layout {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>display: flex;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>gap: 30px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>align-items: flex-start;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>justify-content: center;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>flex-wrap: wrap;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>.left-panel {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>flex: 0 0 350px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>.selector-container {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>background: rgba(255, 255, 255, 0.95);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>padding: 25px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>border-radius: 20px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>margin-bottom: 20px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>.selector-container h2 {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>color: #1a5c4a;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>margin-bottom: 20px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>font-size: 1.5em;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>.name-buttons {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>display: flex;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>flex-direction: column;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>gap: 10px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>.name-btn {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>padding: 15px 25px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>font-size: 1.2em;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>font-weight: bold;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>background: linear-gradient(135deg, #c41e3a 0%, #8b0000 100%);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>color: white;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>border: 3px solid #ffd700;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>border-radius: 15px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>cursor: pointer;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>transition: all 0.5s ease;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>position: relative;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>overflow: hidden;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>.name-btn:hover:not(.blocked):not(.removed) {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>transform: translateX(10px) scale(1.05);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>box-shadow: 0 10px 25px rgba(196, 30, 58, 0.5);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>.name-btn.selected {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>color: #1a5c4a;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>border-color: #8b0000;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>.name-btn.blocked {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>background: linear-gradient(135deg, #666 0%, #444 100%);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>opacity: 0.6;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>cursor: not-allowed;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>transform: translateX(30px);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>.name-btn.blocked::after {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>content: '</b><span class="s1">🔒</span><b>';</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>position: absolute;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>right: 15px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>top: 50%;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>transform: translateY(-50%);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>font-size: 1.2em;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>.name-btn.removed {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>opacity: 0;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>transform: translateX(50px) scale(0.8);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>pointer-events: none;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>max-height: 0;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>padding: 0;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>margin: 0;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>border: none;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>.blocked-tooltip {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>background: rgba(255, 255, 255, 0.98);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>padding: 15px 20px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>border-radius: 15px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>margin-top: 15px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>border: 3px solid #ffd700;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>animation: tooltipBounce 0.5s ease;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>@keyframes tooltipBounce {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>0%, 100% { transform: scale(1); }</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>50% { transform: scale(1.05); }</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>.blocked-tooltip-text {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>color: #8b0000;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>font-weight: bold;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>font-size: 1.1em;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>line-height: 1.5;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>.results-list {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>background: rgba(255, 255, 255, 0.95);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>padding: 20px 25px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>border-radius: 15px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>.results-list h3 {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>color: #1a5c4a;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>margin-bottom: 15px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>font-size: 1.4em;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>.current-result-item {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>padding: 10px 15px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>margin: 6px 0;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>background: linear-gradient(90deg, #ffd700 0%, #ffed4e 100%);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>border-radius: 8px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>color: #1a5c4a;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>font-weight: bold;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>font-size: 1em;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>text-align: left;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>.wheel-section {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>flex: 0 0 700px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>.wheel-container {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>position: relative;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>width: 700px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>height: 700px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>margin: 0 auto;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>.wheel-cover {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>position: absolute;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>top: 0;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>left: 0;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>width: 100%;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>height: 100%;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>background: radial-gradient(circle, rgba(255, 215, 0, 0.95) 0%, rgba(139, 0, 0, 0.95) 100%);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>border-radius: 50%;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>display: none;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>align-items: center;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>justify-content: center;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>z-index: 150;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>font-size: 3em;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>color: white;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>font-weight: bold;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>text-shadow: 0 0 20px rgba(0, 0, 0, 0.8);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>animation: coverPulse 0.5s ease-in-out;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>.wheel-cover.active {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>display: flex;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>@keyframes coverPulse {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>0%, 100% { transform: scale(0.8); opacity: 0; }</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>50% { transform: scale(1.1); opacity: 1; }</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>#wheelCanvas {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>width: 100%;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>height: 100%;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>filter: drop-shadow(0 15px 40px rgba(0, 0, 0, 0.6));</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>.pointer {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>position: absolute;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>top: 50%;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>right: -40px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>transform: translateY(-50%);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>width: 0;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>height: 0;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>border-top: 40px solid transparent;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>border-bottom: 40px solid transparent;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>border-right: 70px solid #ff0000;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>filter: drop-shadow(0 5px 15px rgba(255, 0, 0, 0.7));</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>z-index: 100;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>.center-circle {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>position: absolute;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>top: 50%;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>left: 50%;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>transform: translate(-50%, -50%);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>width: 150px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>height: 150px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>border-radius: 50%;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>border: 8px solid #8b0000;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>box-shadow: 0 0 30px rgba(255, 215, 0, 0.8), inset 0 0 20px rgba(139, 0, 0, 0.3);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>z-index: 101;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>display: flex;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>align-items: center;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>justify-content: center;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>flex-direction: column;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>.center-circle-text {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>color: #8b0000;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>font-weight: bold;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>font-size: 1.1em;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>text-align: center;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>line-height: 1.3;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>.spin-btn {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>margin-top: 20px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>padding: 20px 50px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>font-size: 1.5em;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>font-weight: bold;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>background: linear-gradient(135deg, #ff0000 0%, #c41e3a 100%);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>color: white;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>border: 4px solid #ffd700;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>border-radius: 20px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>cursor: pointer;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>box-shadow: 0 8px 25px rgba(255, 0, 0, 0.5);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>transition: all 0.3s ease;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>animation: pulse 2s ease-in-out infinite;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>@keyframes pulse {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>0%, 100% { transform: scale(1); }</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>50% { transform: scale(1.05); }</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>.spin-btn:hover {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>transform: translateY(-5px) scale(1.1);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>box-shadow: 0 12px 35px rgba(255, 0, 0, 0.7);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>.spin-btn.disabled {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>opacity: 0.5;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>cursor: not-allowed;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>animation: none;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>.message {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>background: rgba(255, 255, 255, 0.95);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>padding: 25px 40px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>border-radius: 20px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>margin-top: 30px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>min-height: 100px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>display: flex;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>align-items: center;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>justify-content: center;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>font-size: 1.6em;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>color: #1a5c4a;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>font-weight: bold;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>animation: messageAppear 0.5s ease;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>@keyframes messageAppear {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>from {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>opacity: 0;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>transform: translateY(-20px);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>}</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>to {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>opacity: 1;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>transform: translateY(0);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>}</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>.final-results {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>position: fixed;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>top: 0;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>left: 0;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>width: 100%;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>height: 100%;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>background: linear-gradient(135deg, #0a3d2e 0%, #8b0000 50%, #0f2d21 100%);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>z-index: 1000;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>display: none;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>align-items: center;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>justify-content: center;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>overflow-y: auto;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>animation: fadeIn 1s ease;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>.final-results.active {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>display: flex;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>@keyframes fadeIn {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>from { opacity: 0; }</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>to { opacity: 1; }</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>.results-content {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>background: rgba(255, 255, 255, 0.98);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>padding: 50px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>border-radius: 30px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>max-width: 800px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>animation: slideUp 1s ease;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>@keyframes slideUp {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>from {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>opacity: 0;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>transform: translateY(50px);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>}</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>to {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>opacity: 1;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>transform: translateY(0);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>}</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>.results-content h2 {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>color: #8b0000;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>margin-bottom: 40px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>font-size: 3em;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>text-align: center;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>animation: titleGlow 2s ease-in-out infinite alternate;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>.result-item {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>padding: 20px 30px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>margin: 15px 0;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>background: linear-gradient(90deg, #ffd700 0%, #ffed4e 50%, #ffd700 100%);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>border-radius: 15px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>color: #1a5c4a;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>font-weight: bold;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>font-size: 1.4em;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>animation: resultAppear 0.8s ease forwards;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>opacity: 0;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>@keyframes resultAppear {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>to {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>opacity: 1;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>transform: translateX(0);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>}</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>from {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>transform: translateX(-30px);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>}</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>.credits {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>margin-top: 50px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>text-align: center;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>animation: creditsAppear 2s ease 3s forwards;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>opacity: 0;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>@keyframes creditsAppear {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>to { opacity: 1; }</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>.credits-title {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>font-size: 2em;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>color: #8b0000;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>margin-bottom: 15px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>font-weight: bold;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>.credits-name {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>font-size: 3em;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>background: linear-gradient(135deg, #ffd700, #ff0000, #00ff00, #ffd700);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>background-size: 300% 300%;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>-webkit-background-clip: text;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>background-clip: text;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>-webkit-text-fill-color: transparent;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>font-weight: bold;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>animation: rainbowShift 3s ease infinite;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>text-shadow: 0 0 30px rgba(255, 215, 0, 0.5);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>@keyframes rainbowShift {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>0% { background-position: 0% 50%; }</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>50% { background-position: 100% 50%; }</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>100% { background-position: 0% 50%; }</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>.credits-subtitle {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>font-size: 1.3em;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>color: #1a5c4a;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>margin-top: 10px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>font-style: italic;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>.restart-btn {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>margin-top: 40px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>padding: 20px 60px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>font-size: 1.4em;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>background: linear-gradient(135deg, #8b0000 0%, #c41e3a 100%);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>color: white;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>border: 4px solid #ffd700;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>border-radius: 20px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>cursor: pointer;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>font-weight: bold;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>transition: all 0.3s ease;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>.restart-btn:hover {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>transform: translateY(-5px) scale(1.05);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>box-shadow: 0 15px 40px rgba(139, 0, 0, 0.7);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>@media (max-width: 1200px) {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>.game-layout {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>flex-direction: column;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>align-items: center;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>}</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>.left-panel {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>flex: 0 0 auto;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>width: 100%;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>max-width: 500px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>}</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>@media (max-width: 800px) {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>.wheel-container, .wheel-section {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>width: 500px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>height: 500px;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>}</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>h1 {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>font-size: 2.5em;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>}</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p1"><b><span class="Apple-converted-space">    </span>&lt;/style&gt;</b></p>
-<p class="p1"><b>&lt;/head&gt;</b></p>
-<p class="p1"><b>&lt;body&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">    </span>&lt;div class="lights"&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>&lt;div class="light"&gt;&lt;/div&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>&lt;div class="light"&gt;&lt;/div&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>&lt;div class="light"&gt;&lt;/div&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>&lt;div class="light"&gt;&lt;/div&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>&lt;div class="light"&gt;&lt;/div&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>&lt;div class="light"&gt;&lt;/div&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>&lt;div class="light"&gt;&lt;/div&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>&lt;div class="light"&gt;&lt;/div&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>&lt;div class="light"&gt;&lt;/div&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>&lt;div class="light"&gt;&lt;/div&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">    </span>&lt;/div&gt;</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">    </span>&lt;div class="container"&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>&lt;h1&gt;</b><span class="s1">🎄</span><b> Świąteczne Koło Fortuny </b><span class="s1">🎁</span><b>&lt;/h1&gt;</b></p>
-<p class="p2"><b><span class="Apple-converted-space">        </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>&lt;div class="game-layout"&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>&lt;div class="left-panel"&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>&lt;div class="selector-container"&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>&lt;h2&gt;</b><span class="s1">🎅</span><b> Wybierz kto losuje:&lt;/h2&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>&lt;div class="name-buttons" id="nameButtons"&gt;&lt;/div&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>&lt;div id="blockedTooltip"&gt;&lt;/div&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>&lt;/div&gt;</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>&lt;div class="results-list" id="resultsSoFar" style="display: none;"&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>&lt;h3&gt;</b><span class="s1">📋</span><b> Dotychczasowe wyniki:&lt;/h3&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>&lt;div id="currentResults"&gt;&lt;/div&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>&lt;/div&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>&lt;/div&gt;</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>&lt;div class="wheel-section"&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>&lt;div class="wheel-container"&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>&lt;div class="wheel-cover" id="wheelCover"&gt;</b><span class="s1">✨</span><b>&lt;/div&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>&lt;div class="pointer"&gt;&lt;/div&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>&lt;canvas id="wheelCanvas" width="700" height="700"&gt;&lt;/canvas&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>&lt;div class="center-circle"&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                        </span>&lt;div class="center-circle-text" id="centerText"&gt;Wybierz&lt;br&gt;osobę!&lt;/div&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>&lt;/div&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>&lt;/div&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>&lt;button class="spin-btn" id="spinBtn" style="display: none;"&gt;</b><span class="s1">🎅</span><b> KRĘĆ KOŁEM! </b><span class="s1">🎁</span><b>&lt;/button&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>&lt;div class="message" id="message"&gt;Wybierz osobę, która rozpocznie losowanie!&lt;/div&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>&lt;/div&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>&lt;/div&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">    </span>&lt;/div&gt;</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">    </span>&lt;div class="final-results" id="finalResults"&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>&lt;div class="results-content"&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>&lt;h2&gt;</b><span class="s1">🎅</span><b> Świąteczne Wyniki! </b><span class="s1">🎄</span><b>&lt;/h2&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>&lt;div id="finalResultsList"&gt;&lt;/div&gt;</b></p>
-<p class="p2"><b><span class="Apple-converted-space">            </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>&lt;div class="credits"&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>&lt;div class="credits-title"&gt;</b><span class="s1">🎨</span><b> Stworzone z miłością przez:&lt;/div&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>&lt;div class="credits-name"&gt;Wojtek&lt;/div&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>&lt;div class="credits-subtitle"&gt;</b><span class="s1">🎄</span><b> Wesołych Świąt! </b><span class="s1">🎁</span><b>&lt;/div&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>&lt;/div&gt;</b></p>
-<p class="p2"><b><span class="Apple-converted-space">            </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>&lt;center&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>&lt;button class="restart-btn" onclick="restartGame()"&gt;</b><span class="s1">🔄</span><b> Zagraj Ponownie&lt;/button&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>&lt;/center&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>&lt;/div&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">    </span>&lt;/div&gt;</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">    </span>&lt;script&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>const names = ['Wojtek', 'Asia', 'Ela', 'Zbyszek', 'Krzysiek', 'Klaudia', 'Radek', 'Ewelina'];</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>const accusative = {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>'Wojtek': 'Wojtka',</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>'Asia': 'Asię',</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>'Ela': 'Elę',</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>'Zbyszek': 'Zbyszka',</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>'Krzysiek': 'Krzyśka',</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>'Klaudia': 'Klaudię',</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>'Radek': 'Radka',</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>'Ewelina': 'Ewelinę'</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>};</b></p>
-<p class="p2"><b><span class="Apple-converted-space">        </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>const isMale = {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>'Wojtek': true,</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>'Asia': false,</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>'Ela': false,</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>'Zbyszek': true,</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>'Krzysiek': true,</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>'Klaudia': false,</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>'Radek': true,</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>'Ewelina': false</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>};</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>// Pary, które nie mogą sobie nawzajem losować</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>const couples = {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>'Ela': 'Zbyszek',</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>'Zbyszek': 'Ela',</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>'Asia': 'Wojtek',</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>'Wojtek': 'Asia',</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>'Krzysiek': 'Ewelina',</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>'Ewelina': 'Krzysiek',</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>'Radek': 'Klaudia',</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>'Klaudia': 'Radek'</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>};</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>let availableToReceive = [...names];</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>let availableGivers = [...names];</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>let currentGiver = null;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>let results = [];</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>let spinning = false;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>let currentRotation = 0;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>let audioContext = null;</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>const canvas = document.getElementById('wheelCanvas');</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>const ctx = canvas.getContext('2d');</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>const spinBtn = document.getElementById('spinBtn');</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>const message = document.getElementById('message');</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>const centerText = document.getElementById('centerText');</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>const wheelCover = document.getElementById('wheelCover');</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>const colors = ['#c41e3a', '#165b33', '#ffd700', '#1e5a8e', '#8b0000', '#0f4d2a', '#b8860b', '#6b1423'];</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>// Christmas music</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>function playChristmasMusic() {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>audioContext = new (window.AudioContext || window.webkitAudioContext)();</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>const notes = [</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>{freq: 523.25, duration: 0.3}, // C</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>{freq: 587.33, duration: 0.3}, // D</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>{freq: 659.25, duration: 0.3}, // E</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>{freq: 698.46, duration: 0.3}, // F</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>{freq: 783.99, duration: 0.6}, // G</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>{freq: 783.99, duration: 0.6}, // G</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>];</b></p>
-<p class="p2"><b><span class="Apple-converted-space">            </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>let time = audioContext.currentTime;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>notes.forEach(note =&gt; {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>const oscillator = audioContext.createOscillator();</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>const gainNode = audioContext.createGain();</b></p>
-<p class="p2"><b><span class="Apple-converted-space">                </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>oscillator.connect(gainNode);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>gainNode.connect(audioContext.destination);</b></p>
-<p class="p2"><b><span class="Apple-converted-space">                </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>oscillator.frequency.value = note.freq;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>oscillator.type = 'sine';</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>gainNode.gain.value = 0.15;</b></p>
-<p class="p2"><b><span class="Apple-converted-space">                </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>oscillator.start(time);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>oscillator.stop(time + note.duration);</b></p>
-<p class="p2"><b><span class="Apple-converted-space">                </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>time += note.duration;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>});</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>// Create snowflakes</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>function createSnowflakes() {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>for (let i = 0; i &lt; 60; i++) {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>const snowflake = document.createElement('div');</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>snowflake.classList.add('snowflake');</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>snowflake.innerHTML = '</b><span class="s2">❄</span><b>';</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>snowflake.style.left = Math.random() * 100 + '%';</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>snowflake.style.animationDuration = (Math.random() * 4 + 3) + 's';</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>snowflake.style.animationDelay = Math.random() * 5 + 's';</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>snowflake.style.fontSize = (Math.random() * 1.5 + 0.5) + 'em';</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>document.body.appendChild(snowflake);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>}</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>createSnowflakes();</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>// Check if a person can safely draw without causing a deadlock</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>function canPersonDraw(person, currentResults) {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>// Simulate what would happen if this person draws</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>const alreadyGivers = currentResults.map(r =&gt; r.giver);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>const alreadyReceivers = currentResults.map(r =&gt; r.receiver);</b></p>
-<p class="p2"><b><span class="Apple-converted-space">            </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>// Who can this person give to?</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>const canGiveTo = names.filter(n =&gt;<span class="Apple-converted-space"> </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>n !== person &amp;&amp;<span class="Apple-converted-space"> </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>!alreadyReceivers.includes(n) &amp;&amp;<span class="Apple-converted-space"> </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>n !== couples[person]</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>);</b></p>
-<p class="p2"><b><span class="Apple-converted-space">            </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>// If no one available, this person is blocked</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>if (canGiveTo.length === 0) return false;</b></p>
-<p class="p2"><b><span class="Apple-converted-space">            </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>// Check if choosing this person would block someone later</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>const remainingGivers = names.filter(n =&gt; !alreadyGivers.includes(n) &amp;&amp; n !== person);</b></p>
-<p class="p2"><b><span class="Apple-converted-space">            </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>// For each remaining giver, check if they would have at least one option</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>for (let futureGiver of remainingGivers) {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>// Simulate worst case: current person takes one option</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>const futureReceivers = names.filter(n =&gt;<span class="Apple-converted-space"> </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>!alreadyReceivers.includes(n) &amp;&amp;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>n !== futureGiver &amp;&amp;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>n !== couples[futureGiver]</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>);</b></p>
-<p class="p2"><b><span class="Apple-converted-space">                </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>// If only one receiver left for future giver, check if current person might take it</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>if (futureReceivers.length === 1 &amp;&amp; canGiveTo.includes(futureReceivers[0])) {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>// This could cause a problem - need deeper check</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>// If there are multiple options for current person, it might be ok</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>if (canGiveTo.length === 1) {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                        </span>return false; // Definite deadlock</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>}</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>}</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>}</b></p>
-<p class="p2"><b><span class="Apple-converted-space">            </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>return true;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>// Initialize name selection buttons</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>function initNameButtons() {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>const container = document.getElementById('nameButtons');</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>const tooltipContainer = document.getElementById('blockedTooltip');</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>container.innerHTML = '';</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>tooltipContainer.innerHTML = '';</b></p>
-<p class="p2"><b><span class="Apple-converted-space">            </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>let hasBlockedPerson = false;</b></p>
-<p class="p2"><b><span class="Apple-converted-space">            </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>availableGivers.forEach(name =&gt; {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>const btn = document.createElement('button');</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>btn.className = 'name-btn';</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>btn.textContent = name;</b></p>
-<p class="p2"><b><span class="Apple-converted-space">                </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>const canDraw = canPersonDraw(name, results);</b></p>
-<p class="p2"><b><span class="Apple-converted-space">                </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>if (!canDraw) {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>btn.classList.add('blocked');</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>btn.style.cursor = 'not-allowed';</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>hasBlockedPerson = true;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>btn.onclick = null;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>} else {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>btn.onclick = () =&gt; selectGiver(name);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>}</b></p>
-<p class="p2"><b><span class="Apple-converted-space">                </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>container.appendChild(btn);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>});</b></p>
-<p class="p2"><b><span class="Apple-converted-space">            </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>// Show tooltip if there are blocked people</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>if (hasBlockedPerson) {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>const tooltip = document.createElement('div');</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>tooltip.className = 'blocked-tooltip';</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>tooltip.innerHTML = `</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>&lt;div class="blocked-tooltip-text"&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                        </span></b><span class="s1">🙈</span><b> Hola hola! Niektóre osoby nie mogą teraz losować - mogłoby dojść do sytuacji gdzie ktoś zostałby ze swoją drugą połówką, a przecież chodzi o rodzinną niespodziankę! </b><span class="s1">🎁😉</span></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>&lt;/div&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>`;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>tooltipContainer.appendChild(tooltip);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>}</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>function selectGiver(name) {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>if (spinning) return;</b></p>
-<p class="p2"><b><span class="Apple-converted-space">            </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>currentGiver = name;</b></p>
-<p class="p2"><b><span class="Apple-converted-space">            </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>// Dostępni odbiorcy: wszyscy oprócz osoby losującej, już wylosowanych i swojej pary</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>availableToReceive = names.filter(n =&gt;<span class="Apple-converted-space"> </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>n !== name &amp;&amp;<span class="Apple-converted-space"> </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>!results.some(r =&gt; r.receiver === n) &amp;&amp;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>n !== couples[name]</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>);</b></p>
-<p class="p2"><b><span class="Apple-converted-space">            </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>// Sprawdź czy to przedostatnie losowanie</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>const remainingReceivers = names.filter(n =&gt; !results.some(r =&gt; r.receiver === n));</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>if (remainingReceivers.length === 2) {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>// Przedostatnie losowanie - po tym kończymy</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>wheelCover.classList.add('active');</b></p>
-<p class="p2"><b><span class="Apple-converted-space">                </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>setTimeout(() =&gt; {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>drawWheel(0);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>currentRotation = 0;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>wheelCover.classList.remove('active');</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>}, 500);</b></p>
-<p class="p2"><b><span class="Apple-converted-space">                </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>centerText.innerHTML = `Losuje:&lt;br&gt;&lt;strong&gt;${currentGiver}&lt;/strong&gt;`;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>message.textContent = `${currentGiver} wykona ostatnie losowanie! Kliknij "KRĘĆ KOŁEM!"`;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>spinBtn.style.display = 'block';</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>} else {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>// Normalne losowanie</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>wheelCover.classList.add('active');</b></p>
-<p class="p2"><b><span class="Apple-converted-space">                </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>setTimeout(() =&gt; {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>drawWheel(0);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>currentRotation = 0;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>wheelCover.classList.remove('active');</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>}, 500);</b></p>
-<p class="p2"><b><span class="Apple-converted-space">                </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>centerText.innerHTML = `Losuje:&lt;br&gt;&lt;strong&gt;${currentGiver}&lt;/strong&gt;`;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>message.textContent = `${currentGiver} będzie losować prezent! Kliknij "KRĘĆ KOŁEM!"`;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>spinBtn.style.display = 'block';</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>}</b></p>
-<p class="p2"><b><span class="Apple-converted-space">            </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>// Update button states</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>document.querySelectorAll('.name-btn').forEach(btn =&gt; {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>btn.classList.remove('selected');</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>if (btn.textContent === name) {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>btn.classList.add('selected');</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>}</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>});</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>// Sound effects</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>function playTickSound() {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>const oscillator = audioContext.createOscillator();</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>const gainNode = audioContext.createGain();</b></p>
-<p class="p2"><b><span class="Apple-converted-space">            </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>oscillator.connect(gainNode);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>gainNode.connect(audioContext.destination);</b></p>
-<p class="p2"><b><span class="Apple-converted-space">            </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>oscillator.frequency.value = 800;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>oscillator.type = 'square';</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>gainNode.gain.value = 0.05;</b></p>
-<p class="p2"><b><span class="Apple-converted-space">            </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>oscillator.start();</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>oscillator.stop(audioContext.currentTime + 0.03);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>function playWinSound() {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>const notes = [523.25, 659.25, 783.99, 1046.50];</b></p>
-<p class="p2"><b><span class="Apple-converted-space">            </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>notes.forEach((freq, i) =&gt; {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>const oscillator = audioContext.createOscillator();</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>const gainNode = audioContext.createGain();</b></p>
-<p class="p2"><b><span class="Apple-converted-space">                </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>oscillator.connect(gainNode);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>gainNode.connect(audioContext.destination);</b></p>
-<p class="p2"><b><span class="Apple-converted-space">                </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>oscillator.frequency.value = freq;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>oscillator.type = 'sine';</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>gainNode.gain.setValueAtTime(0.3, audioContext.currentTime + i * 0.15);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + i * 0.15 + 0.4);</b></p>
-<p class="p2"><b><span class="Apple-converted-space">                </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>oscillator.start(audioContext.currentTime + i * 0.15);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>oscillator.stop(audioContext.currentTime + i * 0.15 + 0.4);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>});</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>function drawWheel(rotation = currentRotation) {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>const centerX = canvas.width / 2;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>const centerY = canvas.height / 2;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>const radius = 320;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>const numSegments = availableToReceive.length;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>const anglePerSegment = (2 * Math.PI) / numSegments;</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>ctx.clearRect(0, 0, canvas.width, canvas.height);</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>// Draw segments</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>availableToReceive.forEach((name, i) =&gt; {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>const startAngle = rotation + i * anglePerSegment - Math.PI / 2;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>const endAngle = startAngle + anglePerSegment;</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>// Segment</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>ctx.beginPath();</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>ctx.moveTo(centerX, centerY);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>ctx.arc(centerX, centerY, radius, startAngle, endAngle);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>ctx.closePath();</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>ctx.fillStyle = colors[i % colors.length];</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>ctx.fill();</b></p>
-<p class="p2"><b><span class="Apple-converted-space">                </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>// Border</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>ctx.strokeStyle = '#ffffff';</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>ctx.lineWidth = 4;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>ctx.stroke();</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>// Text</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>ctx.save();</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>ctx.translate(centerX, centerY);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>ctx.rotate(startAngle + anglePerSegment / 2);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>ctx.textAlign = 'right';</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>ctx.fillStyle = '#ffffff';</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>ctx.font = 'bold 32px Arial';</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>ctx.shadowColor = 'rgba(0,0,0,0.8)';</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>ctx.shadowBlur = 6;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>ctx.fillText(name, radius - 40, 12);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>ctx.restore();</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>});</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>// Outer border</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>ctx.beginPath();</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>ctx.strokeStyle = '#ffd700';</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>ctx.lineWidth = 8;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>ctx.stroke();</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>// Pins/bumpers</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>const numPins = numSegments;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>for (let i = 0; i &lt; numPins; i++) {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>const angle = (i * anglePerSegment) - Math.PI / 2 + rotation;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>const pinX = centerX + Math.cos(angle) * (radius + 15);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>const pinY = centerY + Math.sin(angle) * (radius + 15);</b></p>
-<p class="p2"><b><span class="Apple-converted-space">                </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>ctx.beginPath();</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>ctx.arc(pinX, pinY, 12, 0, 2 * Math.PI);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>ctx.fillStyle = '#ffd700';</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>ctx.fill();</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>ctx.strokeStyle = '#8b0000';</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>ctx.lineWidth = 3;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>ctx.stroke();</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>}</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>function getSelectedSegment(rotation) {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>const anglePerSegment = (2 * Math.PI) / availableToReceive.length;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>const normalizedRotation = ((rotation % (2 * Math.PI)) + (2 * Math.PI)) % (2 * Math.PI);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>const adjustedAngle = (2 * Math.PI - normalizedRotation + Math.PI / 2) % (2 * Math.PI);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>const segmentIndex = Math.floor(adjustedAngle / anglePerSegment) % availableToReceive.length;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>return segmentIndex;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>function spinWheel() {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>if (spinning || availableToReceive.length === 0 || !currentGiver) return;</b></p>
-<p class="p2"><b><span class="Apple-converted-space">            </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>spinning = true;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>spinBtn.classList.add('disabled');</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>spinBtn.textContent = '</b><span class="s1">🎄</span><b> KRĘCI SIĘ... </b><span class="s1">🎄</span><b>';</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>const spinDuration = 5000;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>const startTime = Date.now();</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>const extraRotations = 8 + Math.random() * 3;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>const targetIndex = Math.floor(Math.random() * availableToReceive.length);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>const anglePerSegment = (2 * Math.PI) / availableToReceive.length;</b></p>
-<p class="p2"><b><span class="Apple-converted-space">            </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>const targetSegmentAngle = targetIndex * anglePerSegment;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>const totalRotation = (2 * Math.PI * extraRotations) + targetSegmentAngle + (anglePerSegment / 2);</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>let lastSegment = -1;</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>function animate() {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>const elapsed = Date.now() - startTime;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>const progress = Math.min(elapsed / spinDuration, 1);</b></p>
-<p class="p2"><b><span class="Apple-converted-space">                </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>const easeOut = 1 - Math.pow(1 - progress, 4);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>const rotation = currentRotation + (easeOut * totalRotation);</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>const currentSegment = getSelectedSegment(rotation);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>if (currentSegment !== lastSegment &amp;&amp; progress &lt; 0.95) {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>playTickSound();</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>lastSegment = currentSegment;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>drawWheel(rotation);</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>if (progress &lt; 1) {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>requestAnimationFrame(animate);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>} else {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>currentRotation = rotation;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>playWinSound();</b></p>
-<p class="p2"><b><span class="Apple-converted-space">                    </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>const winnerIndex = getSelectedSegment(rotation);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>const winner = availableToReceive[winnerIndex];</b></p>
-<p class="p2"><b><span class="Apple-converted-space">                    </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>results.push({ giver: currentGiver, receiver: winner });</b></p>
-<p class="p2"><b><span class="Apple-converted-space">                    </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>const verb = isMale[currentGiver] ? 'wylosował' : 'wylosowała';</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>message.innerHTML = `</b><span class="s1">🎉</span><b> &lt;strong&gt;${currentGiver}&lt;/strong&gt; ${verb} &lt;strong&gt;${accusative[winner]}&lt;/strong&gt;! </b><span class="s1">🎁</span><b>`;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>message.style.animation = 'messageAppear 0.5s ease, pulse 1s ease-in-out infinite';</b></p>
-<p class="p2"><b><span class="Apple-converted-space">                    </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>updateResultsList();</b></p>
-<p class="p2"><b><span class="Apple-converted-space">                    </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>// Mark current giver button as removed with animation</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>document.querySelectorAll('.name-btn').forEach(btn =&gt; {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                        </span>if (btn.textContent === currentGiver) {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                            </span>setTimeout(() =&gt; {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                                </span>btn.classList.add('removed');</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                            </span>}, 1500);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                        </span>}</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>});</b></p>
-<p class="p2"><b><span class="Apple-converted-space">                    </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>setTimeout(() =&gt; {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                        </span>// Sprawdź czy to było przedostatnie losowanie</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                        </span>const remainingReceivers = names.filter(n =&gt; !results.some(r =&gt; r.receiver === n));</b></p>
-<p class="p2"><b><span class="Apple-converted-space">                        </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">                        </span>if (remainingReceivers.length === 1) {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                            </span>// Ostatnia osoba - automatyczne przypisanie</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                            </span>const lastReceiver = remainingReceivers[0];</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                            </span>const lastGiver = names.find(n =&gt; !results.some(r =&gt; r.giver === n));</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                            </span>results.push({ giver: lastGiver, receiver: lastReceiver });</b></p>
-<p class="p2"><b><span class="Apple-converted-space">                            </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">                            </span>showFinalResults();</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                        </span>} else {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                            </span>// Kontynuuj grę - zaktualizuj dostępnych losujących</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                            </span>availableGivers = names.filter(n =&gt; !results.some(r =&gt; r.giver === n));</b></p>
-<p class="p2"><b><span class="Apple-converted-space">                            </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">                            </span>message.textContent = 'Wybierz kolejną osobę, która będzie losować!';</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                            </span>message.style.animation = 'messageAppear 0.5s ease';</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                            </span>spinBtn.style.display = 'none';</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                            </span>spinning = false;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                            </span>spinBtn.classList.remove('disabled');</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                            </span>spinBtn.textContent = '</b><span class="s1">🎅</span><b> KRĘĆ KOŁEM! </b><span class="s1">🎁</span><b>';</b></p>
-<p class="p2"><b><span class="Apple-converted-space">                            </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">                            </span>// Update available buttons</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                            </span>initNameButtons();</b></p>
-<p class="p2"><b><span class="Apple-converted-space">                            </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">                            </span>// Remove selection</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                            </span>document.querySelectorAll('.name-btn').forEach(btn =&gt; {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                                </span>btn.classList.remove('selected');</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                            </span>});</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                        </span>}</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span>}, 3000);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>}</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>animate();</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>function updateResultsList() {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>if (results.length === 0) return;</b></p>
-<p class="p2"><b><span class="Apple-converted-space">            </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>const currentResultsDiv = document.getElementById('currentResults');</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>currentResultsDiv.innerHTML = results.map(r =&gt; {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>const verb = isMale[r.giver] ? 'wylosował' : 'wylosowała';</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>return `&lt;div class="current-result-item"&gt;</b><span class="s1">🎅</span><b> ${r.giver} ${verb} ${accusative[r.receiver]}&lt;/div&gt;`;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>}).join('');</b></p>
-<p class="p2"><b><span class="Apple-converted-space">            </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>document.getElementById('resultsSoFar').style.display = 'block';</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>function showFinalResults() {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>playChristmasMusic();</b></p>
-<p class="p2"><b><span class="Apple-converted-space">            </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>const finalResultsList = document.getElementById('finalResultsList');</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>finalResultsList.innerHTML = results.map((r, i) =&gt; {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>const verb = isMale[r.giver] ? 'wylosował' : 'wylosowała';</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>return `&lt;div class="result-item" style="animation-delay: ${i * 0.2}s"&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                    </span></b><span class="s1">🎅</span><b> &lt;strong&gt;${r.giver}&lt;/strong&gt; ${verb} &lt;strong&gt;${accusative[r.receiver]}&lt;/strong&gt;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">                </span>&lt;/div&gt;`;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>}).join('');</b></p>
-<p class="p2"><b><span class="Apple-converted-space">            </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>document.getElementById('finalResults').classList.add('active');</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>function restartGame() {</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>availableToReceive = [...names];</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>availableGivers = [...names];</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>currentGiver = null;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>results = [];</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>spinning = false;</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>currentRotation = 0;</b></p>
-<p class="p2"><b><span class="Apple-converted-space">            </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>document.getElementById('finalResults').classList.remove('active');</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>document.getElementById('resultsSoFar').style.display = 'none';</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>spinBtn.style.display = 'none';</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>spinBtn.classList.remove('disabled');</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>spinBtn.textContent = '</b><span class="s1">🎅</span><b> KRĘĆ KOŁEM! </b><span class="s1">🎁</span><b>';</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>message.textContent = 'Wybierz osobę, która rozpocznie losowanie!';</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>centerText.innerHTML = 'Wybierz&lt;br&gt;osobę!';</b></p>
-<p class="p2"><b><span class="Apple-converted-space">            </span></b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>initNameButtons();</b></p>
-<p class="p1"><b><span class="Apple-converted-space">            </span>drawWheel(0);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>}</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>spinBtn.addEventListener('click', spinWheel);</b></p>
-<p class="p2"><b></b><br></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>initNameButtons();</b></p>
-<p class="p1"><b><span class="Apple-converted-space">        </span>drawWheel(0);</b></p>
-<p class="p1"><b><span class="Apple-converted-space">    </span>&lt;/script&gt;</b></p>
-<p class="p1"><b>&lt;/body&gt;</b></p>
-<p class="p1"><b>&lt;/html&gt;</b></p>
+    <div class="lights">
+        <div class="light"></div>
+        <div class="light"></div>
+        <div class="light"></div>
+        <div class="light"></div>
+        <div class="light"></div>
+        <div class="light"></div>
+        <div class="light"></div>
+        <div class="light"></div>
+        <div class="light"></div>
+        <div class="light"></div>
+    </div>
+
+    <div class="container">
+        <h1>🎄 Świąteczne Koło Fortuny 🎁</h1>
+        
+        <div class="game-layout">
+            <div class="left-panel">
+                <div class="selector-container">
+                    <h2>🎅 Wybierz kto losuje:</h2>
+                    <div class="name-buttons" id="nameButtons"></div>
+                    <div id="blockedTooltip"></div>
+                </div>
+
+                <div class="results-list" id="resultsSoFar" style="display: none;">
+                    <h3>📋 Dotychczasowe wyniki:</h3>
+                    <div id="currentResults"></div>
+                </div>
+            </div>
+
+            <div class="wheel-section">
+                <div class="wheel-container">
+                    <div class="wheel-cover" id="wheelCover">✨</div>
+                    <div class="pointer"></div>
+                    <canvas id="wheelCanvas" width="700" height="700"></canvas>
+                    <div class="center-circle">
+                        <div class="center-circle-text" id="centerText">Wybierz<br>osobę!</div>
+                    </div>
+                </div>
+                <button class="spin-btn" id="spinBtn" style="display: none;">🎅 KRĘĆ KOŁEM! 🎁</button>
+                <div class="message" id="message">Wybierz osobę, która rozpocznie losowanie!</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="final-results" id="finalResults">
+        <div class="results-content">
+            <h2>🎅 Świąteczne Wyniki! 🎄</h2>
+            <div id="finalResultsList"></div>
+            
+            <div class="credits">
+                <div class="credits-title">🎨 Stworzone z miłością przez:</div>
+                <div class="credits-name">Wojtek</div>
+                <div class="credits-subtitle">🎄 Wesołych Świąt! 🎁</div>
+            </div>
+            
+            <center>
+                <button class="restart-btn" onclick="restartGame()">🔄 Zagraj Ponownie</button>
+            </center>
+        </div>
+    </div>
+
+    <script>
+        const names = ['Wojtek', 'Asia', 'Ela', 'Zbyszek', 'Krzysiek', 'Klaudia', 'Radek', 'Ewelina'];
+        const accusative = {
+            'Wojtek': 'Wojtka',
+            'Asia': 'Asię',
+            'Ela': 'Elę',
+            'Zbyszek': 'Zbyszka',
+            'Krzysiek': 'Krzyśka',
+            'Klaudia': 'Klaudię',
+            'Radek': 'Radka',
+            'Ewelina': 'Ewelinę'
+        };
+        
+        const isMale = {
+            'Wojtek': true,
+            'Asia': false,
+            'Ela': false,
+            'Zbyszek': true,
+            'Krzysiek': true,
+            'Klaudia': false,
+            'Radek': true,
+            'Ewelina': false
+        };
+
+        // Pary, które nie mogą sobie nawzajem losować
+        const couples = {
+            'Ela': 'Zbyszek',
+            'Zbyszek': 'Ela',
+            'Asia': 'Wojtek',
+            'Wojtek': 'Asia',
+            'Krzysiek': 'Ewelina',
+            'Ewelina': 'Krzysiek',
+            'Radek': 'Klaudia',
+            'Klaudia': 'Radek'
+        };
+
+        let availableToReceive = [...names];
+        let availableGivers = [...names];
+        let currentGiver = null;
+        let results = [];
+        let spinning = false;
+        let currentRotation = 0;
+        let audioContext = null;
+
+        const canvas = document.getElementById('wheelCanvas');
+        const ctx = canvas.getContext('2d');
+        const spinBtn = document.getElementById('spinBtn');
+        const message = document.getElementById('message');
+        const centerText = document.getElementById('centerText');
+        const wheelCover = document.getElementById('wheelCover');
+
+        const colors = ['#c41e3a', '#165b33', '#ffd700', '#1e5a8e', '#8b0000', '#0f4d2a', '#b8860b', '#6b1423'];
+
+        // Christmas music
+        function playChristmasMusic() {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const notes = [
+                {freq: 523.25, duration: 0.3}, // C
+                {freq: 587.33, duration: 0.3}, // D
+                {freq: 659.25, duration: 0.3}, // E
+                {freq: 698.46, duration: 0.3}, // F
+                {freq: 783.99, duration: 0.6}, // G
+                {freq: 783.99, duration: 0.6}, // G
+            ];
+            
+            let time = audioContext.currentTime;
+            notes.forEach(note => {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = note.freq;
+                oscillator.type = 'sine';
+                gainNode.gain.value = 0.15;
+                
+                oscillator.start(time);
+                oscillator.stop(time + note.duration);
+                
+                time += note.duration;
+            });
+        }
+
+        // Create snowflakes
+        function createSnowflakes() {
+            for (let i = 0; i < 60; i++) {
+                const snowflake = document.createElement('div');
+                snowflake.classList.add('snowflake');
+                snowflake.innerHTML = '❄';
+                snowflake.style.left = Math.random() * 100 + '%';
+                snowflake.style.animationDuration = (Math.random() * 4 + 3) + 's';
+                snowflake.style.animationDelay = Math.random() * 5 + 's';
+                snowflake.style.fontSize = (Math.random() * 1.5 + 0.5) + 'em';
+                document.body.appendChild(snowflake);
+            }
+        }
+
+        createSnowflakes();
+
+        // Check if a person can safely draw without causing a deadlock
+        function canPersonDraw(person, currentResults) {
+            // Simulate what would happen if this person draws
+            const alreadyGivers = currentResults.map(r => r.giver);
+            const alreadyReceivers = currentResults.map(r => r.receiver);
+            
+            // Who can this person give to?
+            const canGiveTo = names.filter(n => 
+                n !== person && 
+                !alreadyReceivers.includes(n) && 
+                n !== couples[person]
+            );
+            
+            // If no one available, this person is blocked
+            if (canGiveTo.length === 0) return false;
+            
+            // Check if choosing this person would block someone later
+            const remainingGivers = names.filter(n => !alreadyGivers.includes(n) && n !== person);
+            
+            // For each remaining giver, check if they would have at least one option
+            for (let futureGiver of remainingGivers) {
+                // Simulate worst case: current person takes one option
+                const futureReceivers = names.filter(n => 
+                    !alreadyReceivers.includes(n) &&
+                    n !== futureGiver &&
+                    n !== couples[futureGiver]
+                );
+                
+                // If only one receiver left for future giver, check if current person might take it
+                if (futureReceivers.length === 1 && canGiveTo.includes(futureReceivers[0])) {
+                    // This could cause a problem - need deeper check
+                    // If there are multiple options for current person, it might be ok
+                    if (canGiveTo.length === 1) {
+                        return false; // Definite deadlock
+                    }
+                }
+            }
+            
+            return true;
+        }
+
+        // Initialize name selection buttons
+        function initNameButtons() {
+            const container = document.getElementById('nameButtons');
+            const tooltipContainer = document.getElementById('blockedTooltip');
+            container.innerHTML = '';
+            tooltipContainer.innerHTML = '';
+            
+            let hasBlockedPerson = false;
+            
+            availableGivers.forEach(name => {
+                const btn = document.createElement('button');
+                btn.className = 'name-btn';
+                btn.textContent = name;
+                
+                const canDraw = canPersonDraw(name, results);
+                
+                if (!canDraw) {
+                    btn.classList.add('blocked');
+                    btn.style.cursor = 'not-allowed';
+                    hasBlockedPerson = true;
+                    btn.onclick = null;
+                } else {
+                    btn.onclick = () => selectGiver(name);
+                }
+                
+                container.appendChild(btn);
+            });
+            
+            // Show tooltip if there are blocked people
+            if (hasBlockedPerson) {
+                const tooltip = document.createElement('div');
+                tooltip.className = 'blocked-tooltip';
+                tooltip.innerHTML = `
+                    <div class="blocked-tooltip-text">
+                        🙈 Hola hola! Niektóre osoby nie mogą teraz losować - mogłoby dojść do sytuacji gdzie ktoś zostałby ze swoją drugą połówką, a przecież chodzi o rodzinną niespodziankę! 🎁😉
+                    </div>
+                `;
+                tooltipContainer.appendChild(tooltip);
+            }
+        }
+
+        function selectGiver(name) {
+            if (spinning) return;
+            
+            currentGiver = name;
+            
+            // Dostępni odbiorcy: wszyscy oprócz osoby losującej, już wylosowanych i swojej pary
+            availableToReceive = names.filter(n => 
+                n !== name && 
+                !results.some(r => r.receiver === n) &&
+                n !== couples[name]
+            );
+            
+            // Sprawdź czy to przedostatnie losowanie
+            const remainingReceivers = names.filter(n => !results.some(r => r.receiver === n));
+            if (remainingReceivers.length === 2) {
+                // Przedostatnie losowanie - po tym kończymy
+                wheelCover.classList.add('active');
+                
+                setTimeout(() => {
+                    drawWheel(0);
+                    currentRotation = 0;
+                    wheelCover.classList.remove('active');
+                }, 500);
+                
+                centerText.innerHTML = `Losuje:<br><strong>${currentGiver}</strong>`;
+                message.textContent = `${currentGiver} wykona ostatnie losowanie! Kliknij "KRĘĆ KOŁEM!"`;
+                spinBtn.style.display = 'block';
+            } else {
+                // Normalne losowanie
+                wheelCover.classList.add('active');
+                
+                setTimeout(() => {
+                    drawWheel(0);
+                    currentRotation = 0;
+                    wheelCover.classList.remove('active');
+                }, 500);
+                
+                centerText.innerHTML = `Losuje:<br><strong>${currentGiver}</strong>`;
+                message.textContent = `${currentGiver} będzie losować prezent! Kliknij "KRĘĆ KOŁEM!"`;
+                spinBtn.style.display = 'block';
+            }
+            
+            // Update button states
+            document.querySelectorAll('.name-btn').forEach(btn => {
+                btn.classList.remove('selected');
+                if (btn.textContent === name) {
+                    btn.classList.add('selected');
+                }
+            });
+        }
+
+        // Sound effects
+        function playTickSound() {
+            if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = 800;
+            oscillator.type = 'square';
+            gainNode.gain.value = 0.05;
+            
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 0.03);
+        }
+
+        function playWinSound() {
+            if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const notes = [523.25, 659.25, 783.99, 1046.50];
+            
+            notes.forEach((freq, i) => {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = freq;
+                oscillator.type = 'sine';
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime + i * 0.15);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + i * 0.15 + 0.4);
+                
+                oscillator.start(audioContext.currentTime + i * 0.15);
+                oscillator.stop(audioContext.currentTime + i * 0.15 + 0.4);
+            });
+        }
+
+        function drawWheel(rotation = currentRotation) {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = 320;
+            const numSegments = availableToReceive.length;
+            const anglePerSegment = (2 * Math.PI) / numSegments;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw segments
+            availableToReceive.forEach((name, i) => {
+                const startAngle = rotation + i * anglePerSegment - Math.PI / 2;
+                const endAngle = startAngle + anglePerSegment;
+
+                // Segment
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                ctx.closePath();
+                ctx.fillStyle = colors[i % colors.length];
+                ctx.fill();
+                
+                // Border
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 4;
+                ctx.stroke();
+
+                // Text
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(startAngle + anglePerSegment / 2);
+                ctx.textAlign = 'right';
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 32px Arial';
+                ctx.shadowColor = 'rgba(0,0,0,0.8)';
+                ctx.shadowBlur = 6;
+                ctx.fillText(name, radius - 40, 12);
+                ctx.restore();
+            });
+
+            // Outer border
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            ctx.strokeStyle = '#ffd700';
+            ctx.lineWidth = 8;
+            ctx.stroke();
+
+            // Pins/bumpers
+            const numPins = numSegments;
+            for (let i = 0; i < numPins; i++) {
+                const angle = (i * anglePerSegment) - Math.PI / 2 + rotation;
+                const pinX = centerX + Math.cos(angle) * (radius + 15);
+                const pinY = centerY + Math.sin(angle) * (radius + 15);
+                
+                ctx.beginPath();
+                ctx.arc(pinX, pinY, 12, 0, 2 * Math.PI);
+                ctx.fillStyle = '#ffd700';
+                ctx.fill();
+                ctx.strokeStyle = '#8b0000';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+            }
+        }
+
+        function getSelectedSegment(rotation) {
+            const anglePerSegment = (2 * Math.PI) / availableToReceive.length;
+            const normalizedRotation = ((rotation % (2 * Math.PI)) + (2 * Math.PI)) % (2 * Math.PI);
+            const adjustedAngle = (2 * Math.PI - normalizedRotation + Math.PI / 2) % (2 * Math.PI);
+            const segmentIndex = Math.floor(adjustedAngle / anglePerSegment) % availableToReceive.length;
+            return segmentIndex;
+        }
+
+        function spinWheel() {
+            if (spinning || availableToReceive.length === 0 || !currentGiver) return;
+            
+            spinning = true;
+            spinBtn.classList.add('disabled');
+            spinBtn.textContent = '🎄 KRĘCI SIĘ... 🎄';
+
+            const spinDuration = 5000;
+            const startTime = Date.now();
+            const extraRotations = 8 + Math.random() * 3;
+            const targetIndex = Math.floor(Math.random() * availableToReceive.length);
+            const anglePerSegment = (2 * Math.PI) / availableToReceive.length;
+            
+            const targetSegmentAngle = targetIndex * anglePerSegment;
+            const totalRotation = (2 * Math.PI * extraRotations) + targetSegmentAngle + (anglePerSegment / 2);
+
+            let lastSegment = -1;
+
+            function animate() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / spinDuration, 1);
+                
+                const easeOut = 1 - Math.pow(1 - progress, 4);
+                const rotation = currentRotation + (easeOut * totalRotation);
+
+                const currentSegment = getSelectedSegment(rotation);
+                if (currentSegment !== lastSegment && progress < 0.95) {
+                    playTickSound();
+                    lastSegment = currentSegment;
+                }
+
+                drawWheel(rotation);
+
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    currentRotation = rotation;
+                    playWinSound();
+                    
+                    const winnerIndex = getSelectedSegment(rotation);
+                    const winner = availableToReceive[winnerIndex];
+                    
+                    results.push({ giver: currentGiver, receiver: winner });
+                    
+                    const verb = isMale[currentGiver] ? 'wylosował' : 'wylosowała';
+                    message.innerHTML = `🎉 <strong>${currentGiver}</strong> ${verb} <strong>${accusative[winner]}</strong>! 🎁`;
+                    message.style.animation = 'messageAppear 0.5s ease, pulse 1s ease-in-out infinite';
+                    
+                    updateResultsList();
+                    
+                    // Mark current giver button as removed with animation
+                    document.querySelectorAll('.name-btn').forEach(btn => {
+                        if (btn.textContent === currentGiver) {
+                            setTimeout(() => {
+                                btn.classList.add('removed');
+                            }, 1500);
+                        }
+                    });
+                    
+                    setTimeout(() => {
+                        // Sprawdź czy to było przedostatnie losowanie
+                        const remainingReceivers = names.filter(n => !results.some(r => r.receiver === n));
+                        
+                        if (remainingReceivers.length === 1) {
+                            // Ostatnia osoba - automatyczne przypisanie
+                            const lastReceiver = remainingReceivers[0];
+                            const lastGiver = names.find(n => !results.some(r => r.giver === n));
+                            results.push({ giver: lastGiver, receiver: lastReceiver });
+                            
+                            showFinalResults();
+                        } else {
+                            // Kontynuuj grę - zaktualizuj dostępnych losujących
+                            availableGivers = names.filter(n => !results.some(r => r.giver === n));
+                            
+                            message.textContent = 'Wybierz kolejną osobę, która będzie losować!';
+                            message.style.animation = 'messageAppear 0.5s ease';
+                            spinBtn.style.display = 'none';
+                            spinning = false;
+                            spinBtn.classList.remove('disabled');
+                            spinBtn.textContent = '🎅 KRĘĆ KOŁEM! 🎁';
+                            
+                            // Update available buttons
+                            initNameButtons();
+                            
+                            // Remove selection
+                            document.querySelectorAll('.name-btn').forEach(btn => {
+                                btn.classList.remove('selected');
+                            });
+                        }
+                    }, 3000);
+                }
+            }
+
+            animate();
+        }
+
+        function updateResultsList() {
+            if (results.length === 0) return;
+            
+            const currentResultsDiv = document.getElementById('currentResults');
+            currentResultsDiv.innerHTML = results.map(r => {
+                const verb = isMale[r.giver] ? 'wylosował' : 'wylosowała';
+                return `<div class="current-result-item">🎅 ${r.giver} ${verb} ${accusative[r.receiver]}</div>`;
+            }).join('');
+            
+            document.getElementById('resultsSoFar').style.display = 'block';
+        }
+
+        function showFinalResults() {
+            playChristmasMusic();
+            
+            const finalResultsList = document.getElementById('finalResultsList');
+            finalResultsList.innerHTML = results.map((r, i) => {
+                const verb = isMale[r.giver] ? 'wylosował' : 'wylosowała';
+                return `<div class="result-item" style="animation-delay: ${i * 0.2}s">
+                    🎅 <strong>${r.giver}</strong> ${verb} <strong>${accusative[r.receiver]}</strong>
+                </div>`;
+            }).join('');
+            
+            document.getElementById('finalResults').classList.add('active');
+        }
+
+        function restartGame() {
+            availableToReceive = [...names];
+            availableGivers = [...names];
+            currentGiver = null;
+            results = [];
+            spinning = false;
+            currentRotation = 0;
+            
+            document.getElementById('finalResults').classList.remove('active');
+            document.getElementById('resultsSoFar').style.display = 'none';
+            spinBtn.style.display = 'none';
+            spinBtn.classList.remove('disabled');
+            spinBtn.textContent = '🎅 KRĘĆ KOŁEM! 🎁';
+            message.textContent = 'Wybierz osobę, która rozpocznie losowanie!';
+            centerText.innerHTML = 'Wybierz<br>osobę!';
+            
+            initNameButtons();
+            drawWheel(0);
+        }
+
+        spinBtn.addEventListener('click', spinWheel);
+
+        initNameButtons();
+        drawWheel(0);
+    </script>
 </body>
 </html>
